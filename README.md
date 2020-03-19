@@ -1,18 +1,18 @@
 [TOC]
 
-### 1、简介
+### 1. Introduction
 
-前段时间有项目有读写分离的需要，因此完成了该类库`mybatis-read-write-split`来实现读写分离。
+Some time ago, there was a need for the project to separate read and write, so this class library was completed `mybatis-read-write-split` to achieve read and write separation.
 
-* 特点
-支持两种模式的主备分离：
-1. 业务透明的读写分离。自动解析sql的读写类型并进行路由转发。
-2. 基于注解的读写分离。通过注解中的配置来进行读写分离。
+* Features
+Supports two modes of active / standby separation：
+1. Business transparent read and write separation. Automatically parse SQL read and write types and perform routing and forwarding.
+2. Annotation-based read and write separation. Read and write separation through the configuration in the annotation.
 
-以上两种模式可以混合使用：缺省自动解析sql的读写类型，如果注解有指定数据源，则根据注解进行路由。
+The above two modes can be mixed: the default read and write types of SQL are automatically parsed. If the annotation has a specified data source, routing is performed according to the annotation.
 
-### 2、用法
-* pom.xml 添加依赖
+### 2. Usage
+* pom.xml Add dependency
 
 ```xml
         <dependency>
@@ -22,10 +22,10 @@
         </dependency>
 ```
 
-* 配置数据源
+* Configure the data source
 
 ```xml
-    <!--替换原本的DataSource-->
+    <!-- Replace the original DataSource -->
     <bean id="dataSource" class="org.mybatis.rw.MultiReadDataSource">
         <property name="masterDataSource" ref="masterDataSource"/>
         <property name="slaveDataSourceList">
@@ -37,23 +37,23 @@
     </bean>
     
     <bean id="masterDataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
-        <!--各数据源配置-->
+        <!-- Configuration of each data source -->
     </bean>
     
     <bean id="slaveDataSource1" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
-        <!--各数据源配置-->
+        <!-- Configuration of each data source -->
     </bean>
     
     <bean id="slaveDataSource2" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
-        <!--各数据源配置-->
+        <!-- Configuration of each data source -->
     </bean>
 ```
 
-#### 2.1、业务透明区分读写
+#### 2.1. Business transparent read and write
 
-mybatis自动分析读or写操作，并进行相应的路由操作
+mybatis Automatically analyze read or write operations and perform corresponding routing operations
 
-* mybatis配置文件添加interceptor
+* mybatis Profile added interceptor
 
 ```xml
    <plugins>
@@ -62,13 +62,13 @@ mybatis自动分析读or写操作，并进行相应的路由操作
     </plugins>
 ```
 
-#### 2.2、通过注解区分读写
+#### 2.2. Distinguish reads and writes by annotations
 
-通过方法上的注解显示指定读主库or备库
+Display the specified read master or standby library through the annotation on the method
 
-* 在目标方法上添加 `@DataSource()`
+* Add on target method `@DataSource()`
 
-如
+Such as
 
 ```java
     @DataSource(DataSourceType.MASTER)
@@ -78,20 +78,20 @@ mybatis自动分析读or写操作，并进行相应的路由操作
 ```
 
 
-### 3、内部实现
+### 3.Internal implementation
 
-#### 2.1、业务透明区分读写
+#### 3.1. Business transparent read and write
 ![](https://raw.githubusercontent.com/chenzz/static-resource/master/941DC39B-846A-4F86-8F61-F810F9543AB0.png)
 
-1. Mapper调用MyBatis进行读写
-2. MyBatis分析读写类型，并存入ThreadLocal中
-3. 自定义DataSource从ThreadLocal里获取读写类型，路由给对应的子DataSource
-4. 使用对应的子DataSource进行读写操作
+1. Mapper calls MyBatis for reading and writing
+2. MyBatis analyzes read and write types and stores them in ThreadLocal
+3. Custom DataSource gets the read and write types from ThreadLocal and routes to the corresponding child DataSource
+4. Use the corresponding child DataSource for read and write operations
 
-#### 2.2、通过注解实现读写区分
+#### 2.2. Read and write distinction through annotations
 
-1. Spring的切面读取注解的内容，分析 读/写 操作
-2. 把分析结果丢到 ThreadLocal中
-3. 自定义DataSource从ThreadLocal里获取DataSource类型，路由给对应的子DataSource
-4. 使用对应的子DataSource进行读写操作
+1. Aspects of Spring read the contents of annotations, analyze read / write operations
+2. Throw the analysis results into ThreadLocal
+3. Custom DataSource gets the DataSource type from ThreadLocal and routes it to the corresponding child DataSource
+4. Use the corresponding child DataSource Read and write operations
 
